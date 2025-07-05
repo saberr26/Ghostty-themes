@@ -41,6 +41,7 @@ update_ghostty_config() {
     local theme_name="$1"
     local tabs_location="$2"
     local config_file="$GHOSTTY_CONFIG_DIR/config"
+    local theme_path="$THEMES_DIR/$theme_name"
 
     if [ ! -f "$config_file" ]; then
         echo -e "$WARNING Ghostty config file not found. Skipping update."
@@ -61,19 +62,56 @@ update_ghostty_config() {
 
     # Update theme path
     if grep -q "^gtk-custom-css =" "$config_file"; then
-        sed -i "s|^gtk-custom-css = .*|gtk-custom-css = $THEMES_DIR/$theme_name|" "$config_file"
+        sed -i "s#^gtk-custom-css = .*#gtk-custom-css = $theme_path#" "$config_file"
     else
-        echo "gtk-custom-css = $THEMES_DIR/$theme_name" >> "$config_file"
+        echo "gtk-custom-css = $theme_path" >> "$config_file"
     fi
 
     # Update tabs location
     if grep -q "^gtk-tabs-location =" "$config_file"; then
-        sed -i "s|^gtk-tabs-location = .*|gtk-tabs-location = $tabs_location|" "$config_file"
+        sed -i "s#^gtk-tabs-location = .*#gtk-tabs-location = $tabs_location#" "$config_file"
     else
         echo "gtk-tabs-location = $tabs_location" >> "$config_file"
     fi
 
     echo -e "$CHECKMARK Ghostty config updated successfully!"
+}
+
+update_matugen_config() {
+    local template_name="$1"
+    local config_file="$MATUGEN_CONFIG_DIR/config.toml"
+    local template_path_in_config="~/.config/matugen/templates/$template_name"
+    local output_path_in_config="~/.config/ghostty/themes/matugen.css"
+
+    if [ ! -f "$config_file" ]; then
+        echo -e "$WARNING Matugen config file not found. Skipping update."
+        return
+    fi
+
+    echo -n -e "$INFO Do you want to update the Matugen config to use this template? (y/n) "
+    read -r answer
+    if [ "$answer" != "y" ]; then
+        return
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "$INFO [DRY RUN] Would update Matugen config to use template: $template_name"
+        return
+    fi
+
+    if grep -q "^\\[templates\\.ghostty\\]" "$config_file"; then
+        sed -i "s#^input_path = .*#input_path = \"$template_path_in_config\"#" "$config_file"
+        sed -i "s#^output_path = .*#output_path = \"$output_path_in_config\"#" "$config_file"
+    else
+        echo "" >> "$config_file"
+        echo "[templates.ghostty]" >> "$config_file"
+        echo "input_path = \"$template_path_in_config\"" >> "$config_file"
+        echo "output_path = \"$output_path_in_config\"" >> "$config_file"
+        echo "post_hook = \"ydotool key 29:1 42:1 51:1 51:0 42:0 29:0\"" >> "$config_file"
+    fi
+
+    echo -e "$CHECKMARK Matugen config updated successfully!"
+    echo -e "$INFO You may need to run matugen for the changes to take effect."
 }
 
 create_dir() {
@@ -109,7 +147,7 @@ copy_file() {
     if [ ! -f "$src" ]; then
         echo -e "$CROSS Source file not found: $src"
         return 1
-    fi
+    }
 
     echo -e "$INFO Installing $type..."
     if [ "$DRY_RUN" = true ]; then
@@ -134,7 +172,7 @@ install_all() {
     if [ ! -d "$src_dir" ]; then
         echo -e "$CROSS Source directory not found: $src_dir"
         return 1
-    fi
+    }
 
     echo -e "$INFO Installing all $type..."
     for file in "$src_dir"/*; do
@@ -228,18 +266,25 @@ main() {
                     case $template_choice in
                         1) 
                             copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen-tabs-top.css" "$TEMPLATES_DIR/" "Ghostty-matugen-tabs-top.css"
+                            update_matugen_config "Ghostty-matugen-tabs-top.css"
+                            update_ghostty_config "matugen.css" "top"
                             break
                             ;;
                         2) 
                             copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen-tabs.css" "$TEMPLATES_DIR/" "Ghostty-matugen-tabs.css"
+                            update_matugen_config "Ghostty-matugen-tabs.css"
+                            update_ghostty_config "matugen.css" "bottom"
                             break
                             ;;
                         3) 
                             copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen.css" "$TEMPLATES_DIR/" "Ghostty-matugen.css"
+                            update_matugen_config "Ghostty-matugen.css"
+                            update_ghostty_config "matugen.css" "bottom"
                             break
                             ;;
                         4) 
                             install_all "$REPO_ROOT/Matugen-Templates" "$TEMPLATES_DIR" "Matugen Templates"
+                            echo -e "$INFO You can now manually update your Matugen and Ghostty configs."
                             break
                             ;;
                         5) break ;;
@@ -259,7 +304,7 @@ main() {
                             ;;
                         2) 
                             backup_file "$MATUGEN_CONFIG_DIR/config.toml"
-                            copy_file "$REPO_ROOT/configs/config.toml" "$MATUGEN_CONFIG_DIR/config.toml" "Matugen Config"
+                            copy__file "$REPO_ROOT/configs/config.toml" "$MATUGEN_CONFIG_DIR/config.toml" "Matugen Config"
                             break
                             ;;
                         3) 
@@ -281,6 +326,7 @@ main() {
                 copy_file "$REPO_ROOT/configs/config-Ghostty" "$GHOSTTY_CONFIG_DIR/config" "Ghostty Config"
                 backup_file "$MATUGEN_CONFIG_DIR/config.toml"
                 copy_file "$REPO_ROOT/configs/config.toml" "$MATUGEN_CONFIG_DIR/config.toml" "Matugen Config"
+                echo -e "$INFO You can now manually update your Ghostty and Matugen configs."
                 ;;
             5) # Exit
                 echo -e "
