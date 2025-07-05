@@ -37,6 +37,45 @@ $GHOST Welcome to the Ghostty Themes Installer $SPARKLES
 }
 
 # --- Functions ---
+update_ghostty_config() {
+    local theme_name="$1"
+    local tabs_location="$2"
+    local config_file="$GHOSTTY_CONFIG_DIR/config"
+
+    if [ ! -f "$config_file" ]; then
+        echo -e "$WARNING Ghostty config file not found. Skipping update."
+        return
+    fi
+
+    echo -n -e "$INFO Do you want to update the Ghostty config to use this theme? (y/n) "
+    read -r answer
+    if [ "$answer" != "y" ]; then
+        return
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "$INFO [DRY RUN] Would update Ghostty config with theme: $theme_name"
+        echo -e "$INFO [DRY RUN] Would set tabs location to: $tabs_location"
+        return
+    fi
+
+    # Update theme path
+    if grep -q "^gtk-custom-css =" "$config_file"; then
+        sed -i "s|^gtk-custom-css = .*|gtk-custom-css = $THEMES_DIR/$theme_name|" "$config_file"
+    else
+        echo "gtk-custom-css = $THEMES_DIR/$theme_name" >> "$config_file"
+    fi
+
+    # Update tabs location
+    if grep -q "^gtk-tabs-location =" "$config_file"; then
+        sed -i "s|^gtk-tabs-location = .*|gtk-tabs-location = $tabs_location|" "$config_file"
+    else
+        echo "gtk-tabs-location = $tabs_location" >> "$config_file"
+    fi
+
+    echo -e "$CHECKMARK Ghostty config updated successfully!"
+}
+
 create_dir() {
     if [ "$DRY_RUN" = true ]; then
         echo -e "$INFO [DRY RUN] Would create directory: $1"
@@ -119,7 +158,7 @@ show_theme_menu() {
     echo -e "
 $INFO Which theme would you like to install?"
     echo "  1) Ghostty-Tabs.css (Tabs on top)"
-    echo "  2) Ghostty.css (Standard)"
+    echo "  2) Ghostty.css (Standard - Tabs on bottom)"
     echo "  3) All Default Themes"
     echo "  4) Back to Main Menu"
     echo -n "Enter your choice: "
@@ -162,9 +201,21 @@ main() {
                     show_theme_menu
                     read -r theme_choice
                     case $theme_choice in
-                        1) copy_file "$REPO_ROOT/Default-Themes/Ghostty-Tabs.css" "$THEMES_DIR/" "Ghostty-Tabs.css"; break ;;
-                        2) copy_file "$REPO_ROOT/Default-Themes/Ghostty.css" "$THEMES_DIR/" "Ghostty.css"; break ;;
-                        3) install_all "$REPO_ROOT/Default-Themes" "$THEMES_DIR" "Default Themes"; break ;;
+                        1) 
+                            copy_file "$REPO_ROOT/Default-Themes/Ghostty-Tabs.css" "$THEMES_DIR/" "Ghostty-Tabs.css"
+                            update_ghostty_config "Ghostty-Tabs.css" "top"
+                            break
+                            ;;
+                        2) 
+                            copy_file "$REPO_ROOT/Default-Themes/Ghostty.css" "$THEMES_DIR/" "Ghostty.css"
+                            update_ghostty_config "Ghostty.css" "bottom"
+                            break
+                            ;;
+                        3) 
+                            install_all "$REPO_ROOT/Default-Themes" "$THEMES_DIR" "Default Themes"
+                            echo -e "$INFO You can now manually update your Ghostty config to use one of the installed themes."
+                            break
+                            ;;
                         4) break ;;
                         *) echo -e "$CROSS Invalid choice." ;;
                     esac
@@ -175,10 +226,22 @@ main() {
                     show_template_menu
                     read -r template_choice
                     case $template_choice in
-                        1) copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen-tabs-top.css" "$TEMPLATES_DIR/" "Ghostty-matugen-tabs-top.css"; break ;;
-                        2) copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen-tabs.css" "$TEMPLATES_DIR/" "Ghostty-matugen-tabs.css"; break ;;
-                        3) copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen.css" "$TEMPLATES_DIR/" "Ghostty-matugen.css"; break ;;
-                        4) install_all "$REPO_ROOT/Matugen-Templates" "$TEMPLATES_DIR" "Matugen Templates"; break ;;
+                        1) 
+                            copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen-tabs-top.css" "$TEMPLATES_DIR/" "Ghostty-matugen-tabs-top.css"
+                            break
+                            ;;
+                        2) 
+                            copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen-tabs.css" "$TEMPLATES_DIR/" "Ghostty-matugen-tabs.css"
+                            break
+                            ;;
+                        3) 
+                            copy_file "$REPO_ROOT/Matugen-Templates/Ghostty-matugen.css" "$TEMPLATES_DIR/" "Ghostty-matugen.css"
+                            break
+                            ;;
+                        4) 
+                            install_all "$REPO_ROOT/Matugen-Templates" "$TEMPLATES_DIR" "Matugen Templates"
+                            break
+                            ;;
                         5) break ;;
                         *) echo -e "$CROSS Invalid choice." ;;
                     esac
