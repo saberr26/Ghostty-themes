@@ -65,8 +65,7 @@ The `configs` directory contains example configuration files:
 
 The installation script can install these files for you, or you can copy them manually.
 
-## Dependencies&nbsp;<img src="assets/material-symbols--package-2-outline.svg" width=28" style="vertical-align: middle;" />
-
+<h2>Dependencies <span style="position: relative; top: 4px;"><img src="assets/material-symbols--package-2-outline.svg" width="30"></span></h2>
 To use the Matugen templates, you will need to install the following:
 
 *   **matugen:** A tool for generating color schemes from your wallpaper. You can find installation instructions [here](https://github.com/InioX/matugen).
