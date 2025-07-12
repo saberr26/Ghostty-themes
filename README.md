@@ -9,7 +9,7 @@ Welcome to the Ghostty Themes repository! This collection of themes is designed 
 *   **Customizable:** All themes can be easily customized to your liking.
 *   **Tabs:** Themes with both top and bottom tab styles.
 
-## Installation&nbsp;<img src="assets/line-md--downloading-loop.svg" width="30" style="vertical-align: middle;" />
+## Installation
 
 This repository includes an interactive installation script to make setting up your themes a breeze. To get started, follow these steps:
 
@@ -39,7 +39,7 @@ If you want to see what the script will do without making any changes to your sy
 ./install.sh --dry-run
 ```
 
-## Themes&nbsp;<img src="assets/material-symbols--palette-outline.svg" width="30" style="vertical-align: middle;" />
+## Themes
 
 ### Default Themes
 
@@ -56,7 +56,7 @@ The `Matugen-Templates` directory contains templates for `matugen`, a tool for g
 *   **Ghostty-matugen-tabs.css:** A template for a theme with tabs at the bottom of the window.
 *   **Ghostty-matugen.css:** A standard theme template.
 
-## Configuration&nbsp;<img src="assets/line-md--cog-loop.svg" width="30" style="vertical-align: middle;" />
+## Configuration
 
 The `configs` directory contains example configuration files:
 
@@ -65,7 +65,7 @@ The `configs` directory contains example configuration files:
 
 The installation script can install these files for you, or you can copy them manually.
 
-<h2>Dependencies <span style="position: relative; top: 4px;"><img src="assets/material-symbols--package-2-outline.svg" width="30"></span></h2>
+<h2>Dependencies</h2>
 To use the Matugen templates, you will need to install the following:
 
 *   **matugen:** A tool for generating color schemes from your wallpaper. You can find installation instructions [here](https://github.com/InioX/matugen).
